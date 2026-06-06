@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CineMatch – Admin Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <style>
+    :root { --bg:#080a0f;--surface:#0f1219;--card:#141822;--border:#1e2536;--accent:#e63946;--accent2:#ffd166;--text:#e8ecf4;--muted:#6b7a99;--green:#06d6a0; }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;padding:40px;}
+    .header{display:flex;align-items:center;justify-content:space-between;margin-bottom:40px;}
+    .logo{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:3px;}
+    .logo span{color:var(--accent);}
+    .back-btn{padding:10px 20px;background:var(--card);border:1px solid var(--border);border-radius:6px;color:var(--text);text-decoration:none;font-size:0.9rem;}
+    h2{font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:2px;margin-bottom:24px;}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;margin-bottom:40px;}
+    .panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px;}
+    .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:40px;}
+    .stat{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;text-align:center;}
+    .stat-val{font-family:'Bebas Neue',sans-serif;font-size:2.5rem;color:var(--accent);}
+    .stat-lbl{font-size:0.8rem;color:var(--muted);font-family:'Space Mono',monospace;letter-spacing:1px;margin-top:4px;}
+    label{display:block;font-size:0.78rem;color:var(--muted);font-family:'Space Mono',monospace;letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;}
+    input,textarea,select{width:100%;padding:10px 14px;background:var(--surface);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:0.9rem;margin-bottom:16px;}
+    input:focus,textarea:focus{outline:none;border-color:var(--accent);}
+    textarea{resize:vertical;min-height:80px;}
+    .btn{padding:12px 24px;border-radius:6px;font-size:0.9rem;font-weight:600;cursor:pointer;border:none;font-family:'DM Sans',sans-serif;transition:all .2s;}
+    .btn-primary{background:var(--accent);color:#fff;}
+    .btn-primary:hover{background:#c1121f;}
+    .btn-danger{background:rgba(230,57,70,0.15);color:var(--accent);border:1px solid var(--accent);}
+    .btn-green{background:rgba(6,214,160,0.15);color:var(--green);border:1px solid var(--green);}
+    .content-table{width:100%;border-collapse:collapse;}
+    .content-table th,.content-table td{padding:12px 16px;text-align:left;border-bottom:1px solid var(--border);}
+    .content-table th{font-size:0.75rem;font-family:'Space Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+    .content-table td{font-size:0.9rem;}
+    .badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:0.75rem;}
+    .badge-genre{background:rgba(255,209,102,0.15);color:var(--accent2);}
+    .msg{padding:12px;border-radius:6px;font-size:0.85rem;margin-top:12px;display:none;}
+    .msg-success{background:rgba(6,214,160,0.1);border:1px solid rgba(6,214,160,0.3);color:var(--green);}
+    .msg-error{background:rgba(230,57,70,0.1);border:1px solid rgba(230,57,70,0.3);color:var(--accent);}
+    .genre-dist{display:flex;flex-direction:column;gap:8px;}
+    .genre-bar-row{display:flex;align-items:center;gap:12px;}
+    .genre-name{width:100px;font-size:0.82rem;color:var(--muted);}
+    .genre-bar-wrap{flex:1;background:var(--surface);border-radius:4px;height:8px;}
+    .genre-bar{height:8px;border-radius:4px;background:var(--accent);transition:width .5s;}
+    .genre-count{font-size:0.8rem;color:var(--muted);font-family:'Space Mono',monospace;width:30px;text-align:right;}
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">Cine<span>Match</span> <span style="font-size:1rem;color:var(--muted);letter-spacing:0;font-family:'DM Sans',sans-serif;"> / Admin</span></div>
+    <a href="/dashboard" class="back-btn">← Back to Dashboard</a>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat"><div class="stat-val" id="s-users">—</div><div class="stat-lbl">Total Users</div></div>
+    <div class="stat"><div class="stat-val" id="s-content">—</div><div class="stat-lbl">Total Movies</div></div>
+    <div class="stat"><div class="stat-val" id="s-ratings">—</div><div class="stat-lbl">Total Ratings</div></div>
+    <div class="stat"><div class="stat-val" id="s-avgrating">—</div><div class="stat-lbl">Avg Rating</div></div>
+  </div>
+
+  <div class="grid">
+    <!-- ADD CONTENT -->
+    <div class="panel">
+      <h2>ADD MOVIE</h2>
+      <div>
+        <label>Title</label>
+        <input type="text" id="f-title" placeholder="The Dark Knight"/>
+        <label>Genre (comma-separated)</label>
+        <input type="text" id="f-genre" placeholder="Action,Crime,Drama"/>
+        <label>Year</label>
+        <input type="number" id="f-year" placeholder="2024" min="1900" max="2030"/>
+        <label>Description</label>
+        <textarea id="f-desc" placeholder="A brief plot summary…"></textarea>
+        <label>Poster URL (optional)</label>
+        <input type="text" id="f-poster" placeholder="https://…/poster.jpg"/>
+        <button class="btn btn-primary" onclick="addContent()">Add Movie →</button>
+        <div class="msg msg-success" id="add-success">✓ Movie added successfully!</div>
+        <div class="msg msg-error" id="add-error"></div>
+      </div>
+    </div>
+
+    <!-- GENRE DISTRIBUTION -->
+    <div class="panel">
+      <h2>GENRE BREAKDOWN</h2>
+      <div class="genre-dist" id="genre-dist">Loading…</div>
+    </div>
+  </div>
+
+  <!-- RETRAIN & EVALUATE -->
+  <div class="panel" style="margin-bottom:32px;">
+    <h2>ML MODEL CONTROLS</h2>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:20px;">
+      <button class="btn btn-green" onclick="retrainModel()">🔄 Retrain Recommendation Model</button>
+      <button class="btn btn-primary" onclick="evaluateModel()">📊 Run Evaluation Metrics</button>
+    </div>
+    <div id="eval-output" style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px;font-family:'Space Mono',monospace;font-size:0.82rem;color:var(--muted);display:none;"></div>
+  </div>
+
+  <!-- CONTENT TABLE -->
+  <div class="panel">
+    <h2>ALL MOVIES</h2>
+    <div style="overflow-x:auto;">
+      <table class="content-table">
+        <thead>
+          <tr>
+            <th>ID</th><th>Title</th><th>Genre</th><th>Year</th>
+            <th>Avg Rating</th><th>Ratings</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="content-table-body">
+          <tr><td colspan="7" style="text-align:center;color:var(--muted);padding:40px;">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+<script>
+  const token = localStorage.getItem('token');
+  if (!token) window.location.href = '/';
+
+  const API = (path, opts={}) => fetch('/api' + path, {
+    ...opts,
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json', ...opts.headers }
+  });
+
+  async function loadStats() {
+    const res  = await API('/admin/stats');
+    if (res.status === 403) {
+      alert('Admin access required. Login with an admin account.');
+      window.location.href = '/dashboard';
+      return;
+    }
+    const data = await res.json();
+    document.getElementById('s-users').textContent   = data.total_users;
+    document.getElementById('s-content').textContent = data.total_content;
+    document.getElementById('s-ratings').textContent = data.total_ratings;
+    document.getElementById('s-avgrating').textContent = data.avg_rating.toFixed(1) + '★';
+
+    // Genre distribution chart
+    const genres = Object.entries(data.genre_distribution)
+                         .sort((a,b) => b[1]-a[1]).slice(0, 10);
+    const maxCount = genres[0]?.[1] || 1;
+    document.getElementById('genre-dist').innerHTML = genres.map(([g, count]) => `
+      <div class="genre-bar-row">
+        <div class="genre-name">${g}</div>
+        <div class="genre-bar-wrap">
+          <div class="genre-bar" style="width:${(count/maxCount*100).toFixed(0)}%"></div>
+        </div>
+        <div class="genre-count">${count}</div>
+      </div>`).join('');
+  }
+
+  async function loadContent() {
+    const res  = await API('/content/?per_page=100');
+    const data = await res.json();
+    const tbody = document.getElementById('content-table-body');
+    tbody.innerHTML = data.items.map(m => `
+      <tr>
+        <td style="color:var(--muted);font-family:'Space Mono',monospace;font-size:0.8rem;">#${m.id}</td>
+        <td><strong>${m.title}</strong></td>
+        <td>${m.genre.split(',').map(g=>`<span class="badge badge-genre">${g.trim()}</span>`).join(' ')}</td>
+        <td>${m.year||'—'}</td>
+        <td>${m.avg_rating.toFixed(1)} ★</td>
+        <td>${m.rating_count}</td>
+        <td><button class="btn btn-danger" style="padding:6px 14px;font-size:0.8rem;" onclick="deleteContent(${m.id},'${m.title.replace(/'/g,"\\'")}')">Delete</button></td>
+      </tr>`).join('');
+  }
+
+  async function addContent() {
+    const body = {
+      title:       document.getElementById('f-title').value,
+      genre:       document.getElementById('f-genre').value,
+      year:        parseInt(document.getElementById('f-year').value),
+      description: document.getElementById('f-desc').value,
+      poster:      document.getElementById('f-poster').value,
+    };
+    const errEl = document.getElementById('add-error');
+    const sucEl = document.getElementById('add-success');
+    errEl.style.display = 'none'; sucEl.style.display = 'none';
+
+    const res  = await API('/admin/content', { method: 'POST', body: JSON.stringify(body) });
+    const data = await res.json();
+    if (!res.ok) { errEl.textContent = data.error; errEl.style.display = 'block'; return; }
+    sucEl.style.display = 'block';
+    ['f-title','f-genre','f-year','f-desc','f-poster'].forEach(id => document.getElementById(id).value = '');
+    loadContent(); loadStats();
+  }
+
+  async function deleteContent(id, title) {
+    if (!confirm(`Delete "${title}"? This cannot be undone.`)) return;
+    await API(`/admin/content/${id}`, { method: 'DELETE' });
+    loadContent(); loadStats();
+  }
+
+  async function retrainModel() {
+    const btn = event.target;
+    btn.textContent = '⏳ Retraining…'; btn.disabled = true;
+    const res  = await API('/recommend/retrain', { method: 'POST' });
+    const data = await res.json();
+    btn.textContent = '🔄 Retrain Recommendation Model'; btn.disabled = false;
+    alert(`✓ ${data.message}\nContent: ${data.content_count} | Ratings: ${data.ratings_count}`);
+  }
+
+  async function evaluateModel() {
+    const out = document.getElementById('eval-output');
+    out.style.display = 'block';
+    out.textContent   = 'Running evaluation…';
+    const res  = await API('/recommend/evaluate');
+    const data = await res.json();
+    out.innerHTML = Object.entries(data).map(([k,v]) =>
+      `<div><span style="color:var(--accent2)">${k}</span>: <span style="color:var(--text)">${typeof v === 'number' ? v.toFixed(4) : v}</span></div>`
+    ).join('');
+  }
+
+  loadStats();
+  loadContent();
+</script>
+</body>
+</html>
