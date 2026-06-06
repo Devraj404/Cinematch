@@ -1,5 +1,12 @@
 import sys
+
 import os
+
+app.config["SECRET_KEY"]              = os.environ.get("SECRET_KEY", "fallback-secret")
+app.config["JWT_SECRET_KEY"]          = os.environ.get("JWT_SECRET_KEY", "fallback-jwt")
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL", "sqlite:///recommendation.db")
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from flask import Flask, render_template
